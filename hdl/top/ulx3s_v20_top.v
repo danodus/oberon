@@ -255,33 +255,17 @@ module ulx3s_v20(
     );
 
     // VGA to digital video converter
-    wire [1:0] tmds[3:0];
-    vga2dvid
-    #(
-      .C_ddr(1'b1),
-      .C_depth(8)
-    )
-    vga2dvid_instance
-    (
-      .clk_pixel(clk_pixel),
-      .clk_shift(clk_shift),
-      .in_red(osd_vga_r),
-      .in_green(osd_vga_g),
-      .in_blue(osd_vga_b),
-      .in_hsync(osd_vga_hsync),
-      .in_vsync(osd_vga_vsync),
-      .in_blank(osd_vga_blank),
-      .out_clock(tmds[3]),
-      .out_red(tmds[2]),
-      .out_green(tmds[1]),
-      .out_blue(tmds[0])
+    hdmi_interface hdmi_interface_instance(
+      .pixel_clk(clk_pixel),
+      .pixel_clk_x5(clk_shift),
+      .red(osd_vga_r),
+      .green(osd_vga_g),
+      .blue(osd_vga_b),
+      .vde(~osd_vga_blank),
+      .hsync(osd_vga_hsync),
+      .vsync(osd_vga_vsync),
+      .gpdi_dp(gpdi_dp),
+      .gpdi_dn()
     );
-
-    // vendor specific DDR modules
-    // convert SDR 2-bit input to DDR clocked 1-bit output (single-ended)
-    ODDRX1F ddr_clock (.D0(tmds[3][0]), .D1(tmds[3][1]), .Q(gpdi_dp[3]), .SCLK(clk_shift), .RST(0));
-    ODDRX1F ddr_red   (.D0(tmds[2][0]), .D1(tmds[2][1]), .Q(gpdi_dp[2]), .SCLK(clk_shift), .RST(0));
-    ODDRX1F ddr_green (.D0(tmds[1][0]), .D1(tmds[1][1]), .Q(gpdi_dp[1]), .SCLK(clk_shift), .RST(0));
-    ODDRX1F ddr_blue  (.D0(tmds[0][0]), .D1(tmds[0][1]), .Q(gpdi_dp[0]), .SCLK(clk_shift), .RST(0));
 
 endmodule
