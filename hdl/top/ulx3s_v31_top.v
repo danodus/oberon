@@ -115,15 +115,10 @@ module ulx3s_v31(
 		.VGA_G(vga_g),
 		.VGA_B(vga_b),
 
-		.PS2CLKA(wifi_gpio22),      // ESP32 keyboard clock wifi_gpio26
-		.PS2DATA(wifi_gpio21),      // ESP32 keyboard data wifi_gpio25
-		//.PS2CLKB(wifi_gpio27), // ESP32 mouse clock
-		//.PS2DATB(wifi_gpio26), // ESP32 mouse data
-
-		//.PS2CLKA(gp[21]), // keyboard clock US3, flat cable on pins down
-		//.PS2DATA(gn[21]), // keyboard data US3, flat cable on pins down
-		.PS2CLKB(usb_fpga_bd_dp), // mouse clock US2
-		.PS2DATB(usb_fpga_bd_dn), // mouse data US2
+		.PS2CLKA(gn[1]), // keyboard clock
+		.PS2DATA(gn[3]), // keyboard data
+		.PS2CLKB(gn[0]), // mouse clock
+		.PS2DATB(gn[2]), // mouse data
 
 		.gpio(gp[9:2]),
 
