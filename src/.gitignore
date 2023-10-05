@@ -1,0 +1,5 @@
+*.bin
+*.elf
+*.ld
+*.mem
+*.lst

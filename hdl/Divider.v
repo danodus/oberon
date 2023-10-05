@@ -1,49 +1,124 @@
-`timescale 1ns / 1ps  
+/*
+ *  kianv harris multicycle RISC-V rv32im
+ *
+ *  copyright (c) 2022 hirosh dabui <hirosh@dabui.de>
+ *
+ *  permission to use, copy, modify, and/or distribute this software for any
+ *  purpose with or without fee is hereby granted, provided that the above
+ *  copyright notice and this permission notice appear in all copies.
+ *
+ *  the software is provided "as is" and the author disclaims all warranties
+ *  with regard to this software including all implied warranties of
+ *  merchantability and fitness. in no event shall the author be liable for
+ *  any special, direct, indirect, or consequential damages or any damages
+ *  whatsoever resulting from loss of use, data or profits, whether in an
+ *  action of contract, negligence or other tortious action, arising out of
+ *  or in connection with the use or performance of this software.
+ *
+ */
 
-/*Project Oberon, Revised Edition 2013
+module divider
+    (
+        input wire clk,
+        input wire reset,
+        input wire ce,
 
-Book copyright (C)2013 Niklaus Wirth and Juerg Gutknecht;
-software copyright (C)2013 Niklaus Wirth (NW), Juerg Gutknecht (JG), Paul
-Reed (PR/PDR).
+        input  wire [              31 : 0] divident,
+        input  wire [              31 : 0] divisor,
+        input  wire [               1 : 0] DIVop,
+        output wire [               31: 0] divOrRemRslt,
+        input  wire                        valid,
+        output reg                         ready,
+        output wire                        div_by_zero_err
+    );
+    // division radix-2 restoring
+    localparam IDLE_BIT              = 0;
+    localparam CALC_BIT              = 1;
+    localparam READY_BIT             = 2;
 
-Permission to use, copy, modify, and/or distribute this software and its
-accompanying documentation (the "Software") for any purpose with or
-without fee is hereby granted, provided that the above copyright notice
-and this permission notice appear in all copies.
+    localparam IDLE                  = 1<<IDLE_BIT;
+    localparam CALC                  = 1<<CALC_BIT;
+    localparam READY                 = 1<<READY_BIT;
 
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHORS DISCLAIM ALL WARRANTIES
-WITH REGARD TO THE SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
-MERCHANTABILITY, FITNESS AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-AUTHORS BE LIABLE FOR ANY CLAIM, SPECIAL, DIRECT, INDIRECT, OR
-CONSEQUENTIAL DAMAGES OR ANY DAMAGES OR LIABILITY WHATSOEVER, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE DEALINGS IN OR USE OR PERFORMANCE OF THE SOFTWARE.*/
+    localparam NR_STATES             = 3;
 
-// NW 20.9.2015
+    (* onehot *)
+    reg [NR_STATES-1:0] div_state;
 
-module Divider(
-  input clk, ce, run, u,
-  output stall,
-  input [31:0] x, y,  // y > 0
-  output [31:0] quot, rem);
+    reg [31:0] rem_rslt;
+    reg [4:0] bit_idx;
 
-reg [5:0] S;  // state
-reg [63:0] RQ;
-wire sign;
-wire [31:0] x0, w0, w1;
+    wire is_div  = DIVop == 2'b00;
+    wire is_divu = DIVop == 2'b01;
+    wire is_rem  = DIVop == 2'b10;
+    wire is_remu = DIVop == 2'b11;
 
-assign stall = run & ~(S == 33);
-assign sign = x[31] & u;
-assign x0 = sign ? -x : x;
-assign w0 = RQ[62: 31];
-assign w1 = w0 - y;
-assign quot = ~sign ? RQ[31:0] :
-  (RQ[63:32] == 0) ? -RQ[31:0] : -RQ[31:0] - 1;
-assign rem = ~sign ? RQ[63:32] :
-  (RQ[63:32] == 0) ? 0 : y - RQ[63:32];
+    wire is_signed = is_div | is_rem;
 
-always @ (posedge(clk)) if(ce) begin
-  RQ <= (S == 0) ? {32'b0, x0} : {(w1[31] ? w0 : w1), RQ[30:0], ~w1[31]};
-  S <= run ? S+1 : 0;
-end
+    wire [31:0] divident_abs = (is_signed & divident[31] ) ? ~divident + 1 : divident; // divident
+    wire [31:0] divisor_abs  = (is_signed & divisor [31] ) ? ~divisor  + 1 : divisor;  // divisor
+    assign div_by_zero_err   = divisor_abs == 32'b 0;
+
+    reg  [31:0] div_rslt;
+    wire [31:0] div_rslt_next = div_rslt << 1;
+    /* verilator lint_off WIDTH */
+    wire [31:0] rem_rslt_next = (rem_rslt << 1) | div_rslt[31];
+    /* verilator lint_on WIDTH */
+    wire [32:0] rem_rslt_sub_divident = rem_rslt_next - divisor_abs;
+
+    always @(posedge clk) begin
+        if (reset) begin
+            div_rslt <= 0;
+            rem_rslt <= 0;
+            div_state <= IDLE;
+            ready     <= 1'b0;
+            bit_idx   <= 0;
+        end else begin
+            if (ce) begin
+                (* parallel_case, full_case *)
+                case (1'b1)
+
+                    div_state[IDLE_BIT]: begin
+                        ready <= 1'b0;
+                        if (!ready && valid) begin
+                            div_rslt <= divident_abs;
+                            rem_rslt <= 0;
+
+                            bit_idx <= 0;
+                            div_state <= CALC;
+                        end
+                    end
+
+                    div_state[CALC_BIT]: begin
+                        bit_idx <= bit_idx + 1'b1;
+                        if (rem_rslt_sub_divident[32]) begin
+                            rem_rslt <= rem_rslt_next;
+                            /* verilator lint_off WIDTH */
+                            div_rslt <= div_rslt_next | 1'b0;
+                            /* verilator lint_on WIDTH */
+                        end else begin
+                            rem_rslt <= rem_rslt_sub_divident[31:0];
+                            /* verilator lint_off WIDTH */
+                            div_rslt <= div_rslt_next | 1'b1;
+                            /* verilator lint_on WIDTH */
+                        end
+
+                        if (&bit_idx) begin
+                            div_state <= READY;
+                        end
+                    end
+
+                    div_state[READY_BIT]: begin
+                        div_rslt  <= (is_signed & (divident[31] ^ divisor[31]) & |divisor) ? ~div_rslt + 1 : div_rslt;
+                        rem_rslt  <= (is_signed & divident[31]) ? ~rem_rslt + 1 : rem_rslt;
+                        ready     <= 1'b1;
+                        div_state <= IDLE;
+                    end
+
+                endcase
+            end
+        end
+    end
+
+    assign divOrRemRslt = (is_div | is_divu) ? div_rslt : rem_rslt;
 endmodule

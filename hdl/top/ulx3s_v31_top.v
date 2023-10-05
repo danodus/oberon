@@ -90,7 +90,9 @@ module ulx3s_v31(
         wire vga_hsync, vga_vsync, vga_blank;
         wire [1:0] vga_r, vga_g, vga_b;
 
-	RISC5Top sys_inst
+  wire [63:0] debug;
+
+	RISCVTop sys_inst
 	(
 		.CLK_CPU(clk_cpu),
 		.CLK_SDRAM(clk_sdram),
@@ -130,7 +132,9 @@ module ulx3s_v31(
 		.SDRAM_ADDR(sdram_a),
 		.SDRAM_DATA(sdram_d),
 		.SDRAM_DQML(sdram_dqm[0]),
-		.SDRAM_DQMH(sdram_dqm[1])
+		.SDRAM_DQMH(sdram_dqm[1]),
+
+    .DEBUG(debug)
 	);
     assign gp[22] = 1'b1; // US3 PULLUP
     assign gn[22] = 1'b1; // US3 PULLUP
@@ -168,14 +172,15 @@ module ulx3s_v31(
 
     // OSD overlay
     localparam C_display_bits = 64;
-    reg [C_display_bits-1:0] OSD_display = 64'hC01DCAFE600DBABE;
+    reg [C_display_bits-1:0] OSD_display = 64'h0000000000000000;
     always @(posedge clk_pixel)
     begin
       if(vga_vsync)
       begin
-        OSD_display[63:56] <= led;
-        OSD_display[31:16] <= sdram_a;
-        OSD_display[15:0]  <= sdram_d;
+        OSD_display[31:0] <= debug;
+        //OSD_display[63:56] <= led;
+        //OSD_display[31:16] <= sdram_a;
+        //OSD_display[15:0]  <= sdram_d;
       end
     end
 

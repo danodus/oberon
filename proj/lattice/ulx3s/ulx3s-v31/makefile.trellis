@@ -28,8 +28,7 @@ TOP_MODULE_FILE = ../../../../hdl/top/$(TOP_MODULE)_top.v
 
 VERILOG_FILES = \
   $(TOP_MODULE_FILE) \
-  ../../../../hdl/RISC5Top.OStation.v \
-  ../../../../hdl/RISC5.v \
+  ../../../../hdl/RISCVTop.OStation.v \
   ../../../../hdl/PROM.v \
   ../../../../hdl/cache_controller.v \
   ../../../../hdl/sdram.v \
@@ -38,11 +37,12 @@ VERILOG_FILES = \
   ../../../../hdl/RS232R.v \
   ../../../../hdl/RS232T.v \
   ../../../../hdl/SPI.v \
-  ../../../../hdl/Multiplier.v \
-  ../../../../hdl/Divider.v \
-  ../../../../hdl/FPAdder.v \
-  ../../../../hdl/FPDivider.v \
-  ../../../../hdl/FPMultiplier.v \
+  ../../../../hdl/processor.sv \
+  ../../../../hdl/decoder.sv \
+  ../../../../hdl/alu.sv \
+  ../../../../hdl/register_file.sv \
+  ../../../../hdl/multiplier.v \
+  ../../../../hdl/divider.v \
   ../../../../hdl/VID.OStation.v \
   ../../../../hdl/lattice/bram32bit.v \
   ../../../../hdl/bram_true2p_2clk.v \

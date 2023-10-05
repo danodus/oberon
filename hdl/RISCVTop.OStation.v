@@ -22,7 +22,7 @@ CONNECTION WITH THE DEALINGS IN OR USE OR PERFORMANCE OF THE SOFTWARE.*/
 // PS/2 mouse and network 7.1.2014 PDR
 // Modified for SDRAM - Nicolae Dumitrache 2016: +cache (16KB, 4-way 8-set), +SDRAM interface (100Mhz)
 
-module RISC5Top(
+module RISCVTop(
 	input CLK_CPU, CLK_SDRAM,
 	input CLK_PIXEL,
 	input BTN_EAST,
@@ -52,7 +52,9 @@ module RISC5Top(
 	output [12:0]SDRAM_ADDR,
 	inout [15:0]SDRAM_DATA,
 	output SDRAM_DQML,
-	output SDRAM_DQMH
+	output SDRAM_DQMH,
+
+	output [31:0]DEBUG
   );
 
 // IO addresses for input / output
@@ -67,7 +69,7 @@ module RISC5Top(
 // 8  general-purpose I/O data
 // 9  general-purpose I/O tri-state control
  
-reg rst;
+reg rst = 1'b0;
 wire clk, clk_sdr;
 wire pclk;
 wire vga_hsync, vga_vsync;
@@ -99,7 +101,7 @@ assign VGA_VSYNC = vga_vsync;
 assign VGA_BLANK = ~de;
 assign pclk = CLK_PIXEL;
 
-wire[23:0] adr;
+wire[31:0] adr;
 wire [3:0] iowadr; // word address
 wire [31:0] inbus, inbus0;  // data to RISC core
 wire [31:0]inbusvid;
@@ -124,11 +126,42 @@ reg [7:0] gpout, gpoc;
 //wire [7:0] gpin;
 
 assign iowadr = adr[5:2];
-assign ioenb = (adr[23:6] == 18'h3FFFF);
+assign ioenb = (adr[31:28] == 4'hE);
 wire mreq = !ioenb;
 
-RISC5 riscx(.clk(clk), .ce(CE/* & (!mreq | wr | rGo)*/), .rst(rst), .rd(rd), .wr(wr), .ben(ben), .stallX(1'b0),
-   .adr(adr), .codebus(inbus0), .inbus(inbus), .outbus(outbus));
+//RISC5 riscx(.clk(clk), .ce(CE/* & (!mreq | wr | rGo)*/), .rst(rst), .rd(rd), .wr(wr), .ben(ben), .stallX(1'b0),
+//   .adr(adr), .codebus(inbus0), .inbus(inbus), .outbus(outbus));
+
+logic cpu_we, cpu_sel;
+assign rd = cpu_sel && !pm_sel && !cpu_we;
+assign wr = cpu_sel && !pm_sel && cpu_we;
+
+assign DEBUG = {8'd0, adr};
+
+wire [31:0] pmout;
+PROM PM (.adr(adr[10:2]), .data(pmout), .clk(clk), .ce(CE));
+
+wire pm_sel = adr[31:28] == 4'hF;
+
+processor cpu(
+	.clk(clk),
+	.reset_i(~rst),
+	.ce_i(CE),
+
+    // interrupts (2)
+    .irq_i(2'b00),
+    .eoi_o(),
+
+    // memory
+    .sel_o(cpu_sel),
+    .addr_o(adr),
+    .we_o(cpu_we),
+    .wr_mask_o(ben),
+    .data_in_i(pm_sel ? pmout : inbus),
+    .data_out_o(outbus),
+    .ack_i(1'b1)
+);
+
 RS232R receiver(.clk(clk), .rst(rst), .RxD(RX), .fsel(bitrate), .done(doneRx),
    .data(dataRx), .rdy(rdyRx));
 RS232T transmitter(.clk(clk), .rst(rst), .start(startTx), .fsel(bitrate),
@@ -207,7 +240,11 @@ assign MOSI[1] = MOSI[0], SCLK[1] = SCLK[0], NEN = spiCtrl[3];
 assign doneKbd = rd & ioenb & (iowadr == 7);
 
 always @(posedge clk) begin
+`ifdef SYNTHESIS
 	rst <= ((cnt1[4:0] == 0) & limit) ? ~btn[3] : rst;
+`else // SYNTHESIS
+	rst <= ~btn[3];
+`endif // SYNTHESIS
 	cnt0 <= limit ? 0 : cnt0 + 1;
 	cnt1 <= cnt1 + limit;
 	if(CE) begin

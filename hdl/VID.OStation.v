@@ -53,7 +53,7 @@ assign vblank = (vcnt[8] & vcnt[9]);  // (vcnt >= 768)
 assign hsync = ~((hcnt >= 1080+6) & (hcnt < 1184+6));  // -ve polarity
 assign vsync = (vcnt >= 771) & (vcnt < 776);  // +ve polarity
 assign xfer = (hcnt[4:0] == data_delay);  // data delay > hcnt cycle + req cycle
-assign vid = (pixbuf[0] ^ inv) & ~hblank & ~vblank;
+assign vid = (hcnt < 16 || vcnt < 16)/*(pixbuf[0] ^ inv)*/ & ~hblank & ~vblank;
 assign RGB = {6{vid}};
 //wire vidadr = Org + {3'b0, ~vcnt, hword};
 

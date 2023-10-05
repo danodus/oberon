@@ -28,7 +28,10 @@ module PROM (input clk,
   
 reg [31:0] mem [511: 0];
 initial $readmemh("prom.mem", mem);
-always @(posedge clk) if(ce) data <= mem[adr];
+always @(posedge clk)
+  if(ce) begin
+    data <= mem[adr];
+  end
 
 endmodule
 
