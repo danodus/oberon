@@ -29,6 +29,8 @@ module top (
     inout       logic [15:0] sdram_dq_io  
     );
 
+	assign sdram_cke_o = 1'b1; // -- SDRAM clock enable
+
     RISCVTop sys_inst
 	(
 		.CLK_CPU(clk),
@@ -73,5 +75,11 @@ module top (
 
         .DEBUG()
 	);
+
+    initial begin
+        //$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);
+        //$dumpfile("logs/vlt_dump.vcd");
+        //$dumpvars();
+    end
     
 endmodule

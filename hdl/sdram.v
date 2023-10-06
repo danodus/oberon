@@ -104,7 +104,12 @@ module SDRAM_16bit(
 			case(STATE)
 				0: begin
 					sys_rd_data_valid <= 1'b0;
-					if(sdr_DQM[0]) STATE <= counter[15] ? 2 : 0;	// initialization, wait >200uS
+					if(sdr_DQM[0])
+`ifdef SYNTHESIS
+						STATE <= counter[15] ? 2 : 0;	// initialization, wait >200uS
+`else // SYNTHESIS
+						STATE <= 2;
+`endif // SYNTHESIS
 					else begin	// wait new command
 						if(rfsh != counter[`RFB]) begin
 							rfsh <= counter[`RFB];

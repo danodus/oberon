@@ -30,7 +30,7 @@ clean:
 
 sim: top.sv sim_main.cpp $(PROGRAM)
 	cp $(PROGRAM) prom.mem
-	$(VERILATOR) -cc --exe $(CFLAGS) $(LDFLAGS) --top-module top $(XOSERA_SRC) top.sv sdl_ps2.cpp sim_main.cpp -I../hdl $(SRC) -Wno-PINMISSING -Wno-WIDTH -Wno-CASEINCOMPLETE -Wno-TIMESCALEMOD -Wno-NULLPORT -Wno-MULTIDRIVEN
+	$(VERILATOR) -cc --exe $(CFLAGS) $(LDFLAGS) --trace --top-module top $(XOSERA_SRC) top.sv sdl_ps2.cpp sim_main.cpp -I../hdl $(SRC) -Wno-PINMISSING -Wno-WIDTH -Wno-CASEINCOMPLETE -Wno-TIMESCALEMOD -Wno-NULLPORT -Wno-MULTIDRIVEN -Wno-UNOPTFLAT
 	$(MAKE) -j 4 -C obj_dir -f Vtop.mk
 
 run: sim

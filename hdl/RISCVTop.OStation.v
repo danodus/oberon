@@ -106,7 +106,8 @@ wire [3:0] iowadr; // word address
 wire [31:0] inbus, inbus0;  // data to RISC core
 wire [31:0]inbusvid;
 wire [31:0] outbus;  // data from RISC core
-wire rd, wr, ben, ioenb, dspreq;
+wire rd, wr, ioenb, dspreq;
+wire [3:0] wmask;
 
 wire [7:0] dataTx, dataRx, dataKbd;
 wire rdyRx, doneRx, startTx, rdyTx, rdyKbd, doneKbd;
@@ -129,10 +130,7 @@ assign iowadr = adr[5:2];
 assign ioenb = (adr[31:28] == 4'hE);
 wire mreq = !ioenb;
 
-//RISC5 riscx(.clk(clk), .ce(CE/* & (!mreq | wr | rGo)*/), .rst(rst), .rd(rd), .wr(wr), .ben(ben), .stallX(1'b0),
-//   .adr(adr), .codebus(inbus0), .inbus(inbus), .outbus(outbus));
-
-logic cpu_we, cpu_sel;
+wire cpu_we, cpu_sel;
 assign rd = cpu_sel && !pm_sel && !cpu_we;
 assign wr = cpu_sel && !pm_sel && cpu_we;
 
@@ -156,7 +154,7 @@ processor cpu(
     .sel_o(cpu_sel),
     .addr_o(adr),
     .we_o(cpu_we),
-    .wr_mask_o(ben),
+    .wr_mask_o(wmask),
     .data_in_i(pm_sel ? pmout : inbus),
     .data_out_o(outbus),
     .ack_i(1'b1)
@@ -200,24 +198,6 @@ assign inbus = ~ioenb ? inbus0 :
     (iowadr == 7) ? {24'b0, dataKbd} :
     (iowadr == 8) ? {24'b0, gpio} :
 	 (iowadr == 9) ? {24'b0, gpoc} : 0);
-
-/*
-assign SRce0 = ben & adr[1];
-assign SRce1 = ben & ~adr[1];
-assign SRbe0 = ben & adr[0];
-assign SRbe1 = ben & ~adr[0];
-assign SRwe0 = ~wr | clk, SRwe1 = SRwe0;
-assign SRoe0 = wr, SRoe1 = SRoe0;
-assign SRbe = {SRbe1, SRbe0, SRbe1, SRbe0};
-
-genvar i;
-generate // tri-state buffer for SRAM
-  for (i = 0; i < 32; i = i+1)
-  begin: bufblock
-    IOBUF SRbuf (.I(outbus[i]), .O(inbus0[i]), .IO(SRdat[i]), .T(~wr));
-  end
-endgenerate
-*/
 
 genvar i;
 generate // tri-state buffer for gpio port
@@ -275,7 +255,7 @@ end
 		sys_addr = 18'hxxxxx;
 		case(cntrl0_user_command_register)
 			2'b01: sys_addr = {waddr[11:0], 6'b000000}; // write 256bytes
-			2'b10: sys_addr = {15'h6ff8 + {3'b000, ~vidadr[11:2], vidadr[1:0]}, 3'b000}; // read 32bytes video
+			2'b10: sys_addr = {{3'b100, vidadr[11:0]}, 3'b000}; // read 32bytes video
 			2'b11: sys_addr = {adr[19:8], 6'b000000}; // read 256bytes	
 		endcase
 	end
@@ -308,7 +288,7 @@ end
 		 .din(outbus), 
 		 .clk(clk),
 		 .mreq(mreq), 
-		 .wmask(({4{!ben}} | (1'b1 << adr[1:0])) & {4{wr}}),
+		 .wmask(wmask & {4{wr}}),
 		 .ce(CE), 
 		 .ddr_din(sys_DOUT), 
 		 .ddr_dout(cntrl0_user_input_data), 
