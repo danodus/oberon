@@ -19,9 +19,9 @@
 const int screen_width = 1280;
 const int screen_height = 1024;
 
-// 1024x768
-const int vga_width = 1344;
-const int vga_height = 800;
+// 640x480
+const int vga_width = 800;
+const int vga_height = 525;
 
 double sc_time_stamp()
 {
@@ -149,7 +149,7 @@ int main(int argc, char **argv, char **env)
             contextp->timeInc(1);
             top->eval();
 
-            //if (contextp->time() > 30000)
+            //if (contextp->time() > 3000000)
             //    quit = true;
 
             // if posedge clk sdram

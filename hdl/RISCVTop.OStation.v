@@ -96,8 +96,8 @@ assign SD_nCS = SS[0];
 assign VGA_R = RGB[5:4];
 assign VGA_G = RGB[3:2];
 assign VGA_B = RGB[1:0];
-assign VGA_HSYNC = vga_hsync;
-assign VGA_VSYNC = vga_vsync;
+assign VGA_HSYNC = ~vga_hsync;
+assign VGA_VSYNC = ~vga_vsync;
 assign VGA_BLANK = ~de;
 assign pclk = CLK_PIXEL;
 
@@ -331,7 +331,7 @@ end
 		if(nop) case(sys_cmd_ack)
 			2'b10: begin
 				crw <= 1'b0;	// VGA read
-				if(vidadr == 12'd3071) vidadr <= 12'd0;
+				if(vidadr == 12'd1199) vidadr <= 12'd0; // 640*480/32/8-1
 				else vidadr <= vidadr + 1'b1;
 			end
 			2'b01, 2'b11: crw <= 1'b1;	// cache read/write			
