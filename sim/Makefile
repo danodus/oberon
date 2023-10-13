@@ -1,4 +1,4 @@
-PROGRAM = ../src/prom.mem
+PROGRAM = ../src/sim_bios/prom.mem
 
 VERILATOR = verilator
 
@@ -34,7 +34,7 @@ sim: top.sv sim_main.cpp $(PROGRAM)
 	$(MAKE) -j 4 -C obj_dir -f Vtop.mk
 
 run: sim
-	cp ../src/*.mem .
+	cp $(PROGRAM) .
 	obj_dir/Vtop
 
 .PHONY: all clean

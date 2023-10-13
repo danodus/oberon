@@ -1,35 +1,5 @@
     .section .text
-    .global _start
 
-_start:
-    j start
-
-.balign 16
-irq0_vec:
-    j irq0
-
-irq1_vec:
-    j irq1
-
-ecall_vec:
-    j ecall
-
-ebreak_vec:
-    j ebreak
-
-irq0:
-    mret
-
-irq1:
-    mret
-
-ecall:
-    sret
-
-ebreak:
-    sret
-
-start:
     add x1,x0,x0
     add x2,x0,x0
     add x3,x0,x0
@@ -46,7 +16,7 @@ start:
     add x14,x0,x0
     add x15,x0,x0
     
-    li sp,1024
+    li sp,1024*1024
 
     jal ra,main
 

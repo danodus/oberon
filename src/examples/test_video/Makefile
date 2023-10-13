@@ -11,24 +11,23 @@ CC = ${RISCV_TOOLCHAIN_PATH}${RISCV_TOOLCHAIN_PREFIX}gcc
 RISCV_CC_OPT ?= -march=rv32im -mabi=ilp32
 
 PROGRAM_SOURCE = start.S program.c
-SERIAL ?= /dev/tty.usbserial-ibNy7k1v1
+SERIAL ?= /dev/tty.usbserial-D00039
 
 LDFILE ?= program.ld
 
-all: prom.mem
-
-$(SITE_MK):
-	$(info Copy the example site.template file to site.mk and edit the paths.)
-	$(error site.mk not found.)
+all: program.hex
 
 clean:
 	rm -f *.hex *.elf *.bin *.lst
 
+run: program.hex
+	$(PYTHON) ../../../tools/sendhex.py $(SERIAL) program.hex
+
 program.lst: program.elf
 	${OBJDUMP} --disassemble program.elf > program.lst
 
-prom.mem: program.bin
-	hexdump -v -e '1/4 "%08x\n"' program.bin > prom.mem
+program.hex: program.bin
+	hexdump -v -e '1/4 "%08x\n"' program.bin > program.hex
 
 program.bin: program.elf program.lst
 	${OBJCOPY} -O binary program.elf program.bin
@@ -36,4 +35,4 @@ program.bin: program.elf program.lst
 program.elf: $(PROGRAM_SOURCE) $(EXTRA_SOURCE)
 	${CC} $(RISCV_CC_OPT) -nostartfiles -O3 -T $(LDFILE) -I ../../lib -I ../common $(EXTRA_CC_ARGS) $(PROGRAM_SOURCE) $(EXTRA_SOURCE) -o program.elf -lm
 
-.PHONY: all clean
+.PHONY: all clean run
