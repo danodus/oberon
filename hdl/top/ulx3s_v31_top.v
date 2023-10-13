@@ -73,8 +73,8 @@ module ulx3s_v31(
         ecp5pll
         #(
             .in_hz( 25*1000000),
-          .out0_hz(100*1000000),
-          .out1_hz(100*1000000), .out1_deg(225),
+          .out0_hz(75*1000000),
+          .out1_hz(75*1000000), .out1_deg(225),
           .out2_hz( 25*1000000)
         )
         ecp5pll_system_inst
@@ -83,8 +83,8 @@ module ulx3s_v31(
           .clk_o(clocks_system)
         );
 	wire clk_cpu, clk_sdram;
-	assign clk_sdram = clocks_system[0]; // 100 MHz sdram controller
-	assign sdram_clk = clocks_system[1]; // 100 MHz 225 deg SDRAM chip
+	assign clk_sdram = clocks_system[0]; // 75 MHz sdram controller
+	assign sdram_clk = clocks_system[1]; // 75 MHz 225 deg SDRAM chip
 	assign clk_cpu = clocks_system[2]; // 25 MHz
 
         wire vga_hsync, vga_vsync, vga_blank;
