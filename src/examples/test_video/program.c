@@ -1,5 +1,5 @@
 #define BASE_IO 0xE0000000
-#define BASE_VIDEO 0x80000
+#define BASE_VIDEO 0x1000000
 
 #define LED (BASE_IO + 4)
 
@@ -16,6 +16,7 @@ unsigned int val(int x, int y, unsigned int c)
 void main(void)
 {
     unsigned int counter = 0;
+    int error_detected = 0;
     for (;;) {
         for (int y = 0; y < 480; ++y) {
             for (int x = 0; x < 20; ++x) {
@@ -24,7 +25,6 @@ void main(void)
             }
         }
 
-        int error_detected = 0;
         for (int y = 0; y < 480; ++y) {
             for (int x = 0; x < 20; ++x) {
                 unsigned int i = y * (640 / 8) + x * 4;

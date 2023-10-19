@@ -47,7 +47,7 @@
 `define SETS	4	// 2^sets
 
 module cache_controller(
-	 input [20:0] addr,
+	 input [25:0] addr,
      output [31:0] dout,
 	 input [31:0]din,
 	 input clk,	
@@ -61,7 +61,7 @@ module cache_controller(
 	 input cache_read_data, // 1 when data must be read from cache, on posedge ddr_clk
 	 output reg ddr_rd = 0,
 	 output reg ddr_wr = 0,
-	 output reg [12:0] waddr,
+	 output reg [17:0] waddr,
 	 input flush
     );
 	
@@ -91,15 +91,15 @@ module cache_controller(
 	initial $readmemh("cache_init2.mem", cache_lru2);
 	initial $readmemh("cache_init3.mem", cache_lru3);
 		 
-/*	reg [12-`SETS:0]cache_addr[0:(1<<`WAYS)-1][0:(1<<`SETS)-1]=
+/*	reg [17-`SETS:0]cache_addr[0:(1<<`WAYS)-1][0:(1<<`SETS)-1]=
 		{{9'h000, 9'h000, 9'h000, 9'h000, 9'h000, 9'h000, 9'h000, 9'h000, 9'h000, 9'h000, 9'h000, 9'h000, 9'h0ff, 9'h0ff, 9'h0ff, 9'h0ff},
 		 {9'h001, 9'h001, 9'h001, 9'h001, 9'h001, 9'h001, 9'h001, 9'h001, 9'h001, 9'h001, 9'h001, 9'h001, 9'h000, 9'h000, 9'h000, 9'h000},
 		 {9'h002, 9'h002, 9'h002, 9'h002, 9'h002, 9'h002, 9'h002, 9'h002, 9'h002, 9'h002, 9'h002, 9'h002, 9'h001, 9'h001, 9'h001, 9'h001},
 		 {9'h003, 9'h003, 9'h003, 9'h003, 9'h003, 9'h003, 9'h003, 9'h003, 9'h003, 9'h003, 9'h003, 9'h003, 9'h002, 9'h002, 9'h002, 9'h002}};*/
-	reg [12-`SETS:0]cache_addr0[0:(1<<`SETS)-1];
-	reg [12-`SETS:0]cache_addr1[0:(1<<`SETS)-1];
-	reg [12-`SETS:0]cache_addr2[0:(1<<`SETS)-1];
-	reg [12-`SETS:0]cache_addr3[0:(1<<`SETS)-1];
+	reg [17-`SETS:0]cache_addr0[0:(1<<`SETS)-1];
+	reg [17-`SETS:0]cache_addr1[0:(1<<`SETS)-1];
+	reg [17-`SETS:0]cache_addr2[0:(1<<`SETS)-1];
+	reg [17-`SETS:0]cache_addr3[0:(1<<`SETS)-1];
 	initial $readmemh("cache_init0.mem", cache_addr0);
 	initial $readmemh("cache_init1.mem", cache_addr1);
 	initial $readmemh("cache_init2.mem", cache_addr2);
@@ -135,12 +135,12 @@ module cache_controller(
 
 //	genvar i;
 //	for(i=0; i<(1<<`WAYS); i=i+1) begin
-//		assign fit[i] = ~r_flush && (cache_addr[i][index] == addr[20:8+`SETS]);
+//		assign fit[i] = ~r_flush && (cache_addr[i][index] == addr[25:8+`SETS]);
 //	end
-	assign fit[0] = ~r_flush && (cache_addr0[index] == addr[20:8+`SETS]);
-	assign fit[1] = ~r_flush && (cache_addr1[index] == addr[20:8+`SETS]);
-	assign fit[2] = ~r_flush && (cache_addr2[index] == addr[20:8+`SETS]);
-	assign fit[3] = ~r_flush && (cache_addr3[index] == addr[20:8+`SETS]);
+	assign fit[0] = ~r_flush && (cache_addr0[index] == addr[25:8+`SETS]);
+	assign fit[1] = ~r_flush && (cache_addr1[index] == addr[25:8+`SETS]);
+	assign fit[2] = ~r_flush && (cache_addr2[index] == addr[25:8+`SETS]);
+	assign fit[3] = ~r_flush && (cache_addr3[index] == addr[25:8+`SETS]);
 	assign free[0] = r_flush ? (flushcount[`WAYS+`SETS-1:`SETS] == 0) : ~|cache_lru0[index];
 	assign free[1] = r_flush ? (flushcount[`WAYS+`SETS-1:`SETS] == 1) : ~|cache_lru1[index];
 	assign free[2] = r_flush ? (flushcount[`WAYS+`SETS-1:`SETS] == 2) : ~|cache_lru2[index];
@@ -233,13 +233,13 @@ module cache_controller(
 			3'b000: begin
 				if(mreq && !hit) begin	// cache miss
 					case(fblk)
-						0: begin waddr <= {cache_addr0[index], index}; if(!r_flush) cache_addr0[index] <= addr[20:8+`SETS]; end
-						1: begin waddr <= {cache_addr1[index], index}; if(!r_flush) cache_addr1[index] <= addr[20:8+`SETS]; end
-						2: begin waddr <= {cache_addr2[index], index}; if(!r_flush) cache_addr2[index] <= addr[20:8+`SETS]; end
-						3: begin waddr <= {cache_addr3[index], index}; if(!r_flush) cache_addr3[index] <= addr[20:8+`SETS]; end
+						0: begin waddr <= {cache_addr0[index], index}; if(!r_flush) cache_addr0[index] <= addr[25:8+`SETS]; end
+						1: begin waddr <= {cache_addr1[index], index}; if(!r_flush) cache_addr1[index] <= addr[25:8+`SETS]; end
+						2: begin waddr <= {cache_addr2[index], index}; if(!r_flush) cache_addr2[index] <= addr[25:8+`SETS]; end
+						3: begin waddr <= {cache_addr3[index], index}; if(!r_flush) cache_addr3[index] <= addr[25:8+`SETS]; end
 					endcase
 //					waddr <= {cache_addr[fblk][index], index}; 
-//					if(!r_flush) cache_addr[fblk][index] <= addr[20:8+`SETS];
+//					if(!r_flush) cache_addr[fblk][index] <= addr[25:8+`SETS];
 					ddr_rd <= ~dirty & ~r_flush;
 					ddr_wr <= dirty;
 					STATE <= dirty ? 3'b011 : 3'b100;

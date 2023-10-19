@@ -244,19 +244,19 @@ end
 	wire sys_wr_data_valid;
 	wire [1:0]sys_cmd_ack;
 	reg crw = 1'b0;
-	wire [12:0]waddr;
+	wire [17:0]waddr;
 
 	assign clk = CLK_CPU;
 	assign clk_sdr = CLK_SDRAM;
 	
 	
-	reg [17:0]sys_addr;
+	reg [22:0]sys_addr;
 	always @(*)begin
-		sys_addr = 18'hxxxxx;
+		sys_addr = 23'hxxxxx;
 		case(cntrl0_user_command_register)
-			2'b01: sys_addr = {waddr[11:0], 6'b000000}; // write 256bytes
-			2'b10: sys_addr = {{3'b100, vidadr[11:0]}, 3'b000}; // read 32bytes video
-			2'b11: sys_addr = {adr[19:8], 6'b000000}; // read 256bytes	
+			2'b01: sys_addr = {waddr[16:0], 6'b000000}; // write 256bytes
+			2'b10: sys_addr = {8'b10000000, vidadr[11:0], 3'b000}; // read 32bytes video
+			2'b11: sys_addr = {adr[24:8], 6'b000000}; // read 256bytes	
 		endcase
 	end
 
@@ -264,7 +264,7 @@ end
 	(
 		.sys_CLK(clk_sdr),				// clock
 		.sys_CMD(cntrl0_user_command_register),					// 00=nop, 01 = write 256 bytes, 10=read 32 bytes, 11=read 256 bytes
-		.sys_ADDR({5'b00000, sys_addr}),	// word address
+		.sys_ADDR(sys_addr),	// word address
 		.sys_DIN(cntrl0_user_input_data),		// data input
 		.sys_DOUT(sys_DOUT),					// data output
 		.sys_rd_data_valid(sys_rd_data_valid),	// data valid read
@@ -283,7 +283,7 @@ end
 	reg [1:0]auto_flush = 2'b00;
 	cache_controller cache_ctl 
 	(
-		 .addr({1'b0, adr[19:0]}), 
+		 .addr(adr[25:0]), 
 		 .dout(inbus0), 
 		 .din(outbus), 
 		 .clk(clk),
