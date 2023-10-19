@@ -38,7 +38,7 @@ module RISCVTop(
 	output SD_nCS,
 	// VGA video
 	output VGA_HSYNC, VGA_VSYNC, VGA_BLANK,
-	output [1:0] VGA_R, VGA_G, VGA_B,
+	output [3:0] VGA_R, VGA_G, VGA_B,
 	input PS2CLKA, PS2DATA, // keyboard
 	inout PS2CLKB, PS2DATB,
 	output [2:0] MOUSEBTN,
@@ -81,7 +81,7 @@ wire [1:0]MISO = {1'b1, SD_DO};          // SPI - SD card & network
 wire [1:0] SCLK, MOSI;
 wire [1:0] SS;
 wire NEN;  // network enable
-wire [5:0]RGB;
+wire [11:0]RGB;
 wire CE; 
 wire empty;
 reg qready = 1'b0;
@@ -93,9 +93,9 @@ assign SD_DI = MOSI[0];
 assign SD_CK = SCLK[0];
 assign SD_nCS = SS[0];
 
-assign VGA_R = RGB[5:4];
-assign VGA_G = RGB[3:2];
-assign VGA_B = RGB[1:0];
+assign VGA_R = RGB[11:8];
+assign VGA_G = RGB[7:4];
+assign VGA_B = RGB[3:0];
 assign VGA_HSYNC = ~vga_hsync;
 assign VGA_VSYNC = ~vga_vsync;
 assign VGA_BLANK = ~de;
@@ -122,7 +122,7 @@ reg [31:0] cnt1 = 0; // milliseconds
 wire [31:0] spiRx;
 wire spiStart, spiRdy;
 reg [3:0] spiCtrl;
-reg [11:0] vidadr = 0;
+reg [18:0] vidadr = 0;
 reg [7:0] gpout, gpoc;
 //wire [7:0] gpin;
 
@@ -167,7 +167,7 @@ RS232T transmitter(.clk(clk), .rst(rst), .start(startTx), .fsel(bitrate),
 SPI spi(.clk(clk), .rst(rst), .start(spiStart), .dataTx(outbus),
    .fast(spiCtrl[2]), .dataRx(spiRx), .rdy(spiRdy),
  	.SCLK(SCLK[0]), .MOSI(MOSI[0]), .MISO(MISO[0] & MISO[1]));
-VID vid(.clk(clk), .ce(qready), .pclk(pclk), .req(dspreq), .inv(~swi[7]),
+VID vid(.clk(clk), .ce(qready), .pclk(pclk), .req(dspreq),
    .viddata(inbusvid), .de(de), .RGB(RGB), .hsync(vga_hsync), .vsync(vga_vsync));
 PS2 kbd(.clk(clk), .rst(rst), .done(doneKbd), .rdy(rdyKbd), .shift(),
    .data(dataKbd), .PS2C(PS2CLKA), .PS2D(PS2DATA));
@@ -255,7 +255,7 @@ end
 		sys_addr = 23'hxxxxx;
 		case(cntrl0_user_command_register)
 			2'b01: sys_addr = {waddr[16:0], 6'b000000}; // write 256bytes
-			2'b10: sys_addr = {8'b10000000, vidadr[11:0], 3'b000}; // read 32bytes video
+			2'b10: sys_addr = {1'b1, vidadr[18:0], 3'b000}; // read 32bytes video
 			2'b11: sys_addr = {adr[24:8], 6'b000000}; // read 256bytes	
 		endcase
 	end
@@ -304,8 +304,10 @@ end
 	reg [15:0]video_din;
 	reg vd1 = 1'b0;
 	wire almost_empty;
-	vqueue vqueue_inst
-	(
+	vqueue #(
+	   .almost_empty(128),
+	   .addr_width(10)
+	) vqueue_inst(
 	  .WrClock(clk_sdr), // input wr_clk
 	  .RdClock(clk), // input rd_clk
 	  .Data({sys_DOUT, video_din}), // input [31 : 0] din
@@ -331,7 +333,7 @@ end
 		if(nop) case(sys_cmd_ack)
 			2'b10: begin
 				crw <= 1'b0;	// VGA read
-				if(vidadr == 12'd1199) vidadr <= 12'd0; // 640*480/32/8-1
+				if(vidadr == 19'd19199) vidadr <= 12'd0; // 640*480*2/32-1
 				else vidadr <= vidadr + 1'b1;
 			end
 			2'b01, 2'b11: crw <= 1'b1;	// cache read/write			

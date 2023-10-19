@@ -88,7 +88,7 @@ module ulx3s_v31(
 	assign clk_cpu = clocks_system[2]; // 25 MHz
 
         wire vga_hsync, vga_vsync, vga_blank;
-        wire [1:0] vga_r, vga_g, vga_b;
+        wire [3:0] vga_r, vga_g, vga_b;
 
   wire [63:0] debug;
 
@@ -140,9 +140,9 @@ module ulx3s_v31(
     assign gn[22] = 1'b1; // US3 PULLUP
 
     // oberon video signal from oberon, rgb222->rgb888
-    wire [7:0] vga_r8 = {vga_r,{6{vga_r[0]}}};
-    wire [7:0] vga_g8 = {vga_g,{6{vga_g[0]}}};
-    wire [7:0] vga_b8 = {vga_b,{6{vga_b[0]}}};
+    wire [7:0] vga_r8 = {vga_r, vga_r};
+    wire [7:0] vga_g8 = {vga_g, vga_g};
+    wire [7:0] vga_b8 = {vga_b, vga_b};
 
     // VGA to digital video converter
     hdmi_interface hdmi_interface_instance(
