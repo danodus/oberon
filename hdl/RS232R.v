@@ -21,7 +21,8 @@ CONNECTION WITH THE DEALINGS IN OR USE OR PERFORMANCE OF THE SOFTWARE.*/
 
 // NW 4.5.09 / 15.11.10
 // RS232 receiver for 19200 or 115200 bps, 8 bit data
-// clock is 25 MHz
+// clock is 25 MHz
+
 
 module RS232R(
     input clk, rst,
@@ -39,7 +40,11 @@ reg [11:0] tick;
 reg [3:0] bitcnt;
 reg [7:0] shreg;
 
+`ifdef FAST_CPU
+assign limit = fsel ? 217*2 : 1302*2;
+`else
 assign limit = fsel ? 217 : 1302;
+`endif
 assign endtick = tick == limit;
 assign midtick = tick == {1'b0, limit[11:1]};  // limit/2
 assign endbit = bitcnt == 8;

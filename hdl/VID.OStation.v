@@ -49,7 +49,7 @@ assign hend = (hcnt == 799), vend = (vcnt == 524);
 assign vblank = (vcnt >= 480);
 assign hsync = (hcnt >= 640+16) & (hcnt < 640+16+96);
 assign vsync = (vcnt >= 480+10) & (vcnt < 480+10+2);
-assign xfer = ~hcnt[0];  // data delay > hcnt cycle + req cycle
+assign xfer = hcnt[0];  // data delay > hcnt cycle + req cycle
 assign vid = pixbuf[15:0] & ~hblank & ~vblank;
 assign RGB = {vid[11:8], vid[7:4], vid[3:0]};
 
@@ -60,7 +60,7 @@ always @(posedge pclk) if(ce) begin  // pixel clock domain
   pixbuf <= xfer ? vidbuf : {16'd0, pixbuf[31:16]};
 end
 
-always @(posedge clk) if(ce) begin  // CPU (SRAM) clock domain
+always @(posedge pclk) if(ce) begin  // CPU (SRAM) clock domain
   hword <= hcnt[0];
   req <= ~vblank & (hcnt < 640) & hword;  // i.e. adr changed
   vidbuf <= req ? viddata : vidbuf;

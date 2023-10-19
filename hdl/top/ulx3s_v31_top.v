@@ -73,9 +73,15 @@ module ulx3s_v31(
         ecp5pll
         #(
             .in_hz( 25*1000000),
-          .out0_hz(75*1000000),
-          .out1_hz(75*1000000), .out1_deg(225),
-          .out2_hz( 25*1000000)
+`ifdef FAST_CPU
+          .out0_hz(100*1000000),
+          .out1_hz(100*1000000), .out1_deg(180),
+          .out2_hz( 50*1000000)
+`else
+          .out0_hz(50*1000000),
+          .out1_hz(50*1000000), .out1_deg(180),
+          .out2_hz(25*1000000)
+`endif
         )
         ecp5pll_system_inst
         (

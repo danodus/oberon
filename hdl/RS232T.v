@@ -38,7 +38,11 @@ reg [11:0] tick;
 reg [3:0] bitcnt;
 reg [8:0] shreg;
 
+`ifdef FAST_CPU
+assign limit = fsel ? 217*2 : 1302*2;
+`else
 assign limit = fsel ? 217 : 1302;
+`endif
 assign endtick = tick == limit;
 assign endbit = bitcnt == 9;
 assign rdy = ~run;

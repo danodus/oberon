@@ -212,7 +212,11 @@ endgenerate
 assign dataTx = outbus[7:0];
 assign startTx = wr & ioenb & (iowadr == 2);
 assign doneRx = rd & ioenb & (iowadr == 2);
+`ifdef FAST_CPU
+assign limit = (cnt0 == 49999);
+`else
 assign limit = (cnt0 == 24999);
+`endif
 assign LED = Lreg;
 assign spiStart = wr & ioenb & (iowadr == 4);
 assign SS = ~spiCtrl[1:0];  //active low slave select
@@ -309,7 +313,7 @@ end
 	   .addr_width(10)
 	) vqueue_inst(
 	  .WrClock(clk_sdr), // input wr_clk
-	  .RdClock(clk), // input rd_clk
+	  .RdClock(pclk), // input rd_clk
 	  .Data({sys_DOUT, video_din}), // input [31 : 0] din
 	  .WrEn(vd1), // input wr_en
 	  .RdEn(dspreq), // input rd_en
@@ -345,7 +349,7 @@ end
 		end
 	end
 	
-	always @(posedge clk) begin
+	always @(posedge pclk) begin
 		auto_flush <= {auto_flush[0], vga_vsync};
 		qready <= !empty;
 /*		if(CE)  // 1T delay for memory read
