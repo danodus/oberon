@@ -1,4 +1,7 @@
 `default_nettype none
+
+`define FAST_CPU
+
 module ulx3s_v31(
 //      -- System clock and reset
 	input clk_25mhz, // main clock input from external clock source
@@ -52,6 +55,7 @@ module ulx3s_v31(
 
         // if picture "rolls" (sync problem), try another pixel clock
 	parameter pixel_clock_MHz = 25;
+	wire pll_video_locked;
 	wire [3:0] clocks_video;
         ecp5pll
         #(
@@ -62,14 +66,15 @@ module ulx3s_v31(
         ecp5pll_video_inst
         (
           .clk_i(clk_25mhz),
-          .clk_o(clocks_video)
+          .clk_o(clocks_video),
+		  .locked(pll_video_locked)
         );
         wire clk_pixel, clk_shift;
         assign clk_shift = clocks_video[0]; // 125 MHz
         assign clk_pixel = clocks_video[1]; // 25 MHz
 
 	wire [3:0] clocks_system;
-	wire pll_locked;
+	wire pll_system_locked;
         ecp5pll
         #(
             .in_hz( 25*1000000),
@@ -86,7 +91,8 @@ module ulx3s_v31(
         ecp5pll_system_inst
         (
           .clk_i(clk_25mhz),
-          .clk_o(clocks_system)
+          .clk_o(clocks_system),
+		  .locked(pll_system_locked)
         );
 	wire clk_cpu, clk_sdram;
 	assign clk_sdram = clocks_system[0]; // 75 MHz sdram controller
@@ -98,6 +104,9 @@ module ulx3s_v31(
 
   wire [63:0] debug;
 
+	wire pll_locked;
+	assign pll_locked = pll_system_locked & pll_video_locked;
+
 	RISCVTop sys_inst
 	(
 		.CLK_CPU(clk_cpu),
@@ -106,7 +115,7 @@ module ulx3s_v31(
 		.BTN_NORTH(btn[3]), // up
 		.BTN_SOUTH(btn[4]), // down
 		.BTN_WEST(btn[5]), // left
-		.BTN_EAST(~btn[0]), // right (power btn, inverted signal)
+		.BTN_EAST(!pll_locked | ~btn[0]), // right (power btn, inverted signal)
 		.RX(ftdi_txd),   // RS-232
 		.TX(ftdi_rxd),
 		.LED(led),

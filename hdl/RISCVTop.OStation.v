@@ -351,7 +351,7 @@ end
 	
 	always @(posedge pclk) begin
 		auto_flush <= {auto_flush[0], vga_vsync};
-		qready <= !empty;
+		qready <= rst && !empty;
 /*		if(CE)  // 1T delay for memory read
 			if(rGo) rGo <= 1'b0;
 			else rGo <= mreq & !wr;*/

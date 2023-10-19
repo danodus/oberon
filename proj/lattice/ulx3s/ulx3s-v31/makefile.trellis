@@ -56,8 +56,7 @@ VHDL_FILES =
 
 # synthesis options
 YOSYS_OPTIONS = -abc9
-#NEXTPNR_OPTIONS = --timing-allow-fail
-NEXTPNR_OPTIONS =
+NEXTPNR_OPTIONS = --timing-allow-fail --randomize-seed
 
 SCRIPTS = ../../../../scripts
 include $(SCRIPTS)/diamond_path.mk
