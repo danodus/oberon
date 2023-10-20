@@ -122,7 +122,7 @@ reg [31:0] cnt1 = 0; // milliseconds
 wire [31:0] spiRx;
 wire spiStart, spiRdy;
 reg [3:0] spiCtrl;
-reg [18:0] vidadr = 0;
+reg [15:0] vidadr = 0;
 reg [7:0] gpout, gpoc;
 //wire [7:0] gpin;
 
@@ -259,7 +259,7 @@ end
 		sys_addr = 23'hxxxxx;
 		case(cntrl0_user_command_register)
 			2'b01: sys_addr = {waddr[16:0], 6'b000000}; // write 256bytes
-			2'b10: sys_addr = {1'b1, vidadr[18:0], 3'b000}; // read 32bytes video
+			2'b10: sys_addr = {1'b1, vidadr[15:0], 6'b000000}; // read 256bytes video
 			2'b11: sys_addr = {adr[24:8], 6'b000000}; // read 256bytes	
 		endcase
 	end
@@ -337,7 +337,7 @@ end
 		if(nop) case(sys_cmd_ack)
 			2'b10: begin
 				crw <= 1'b0;	// VGA read
-				if(vidadr == 19'd19199) vidadr <= 12'd0; // 640*480*2/32-1
+				if(vidadr == 16'd2399) vidadr <= 16'd0; // 640*480*2/256-1
 				else vidadr <= vidadr + 1'b1;
 			end
 			2'b01, 2'b11: crw <= 1'b1;	// cache read/write			

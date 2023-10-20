@@ -41,7 +41,8 @@
 // Additional Comments: 
 //////////////////////////////////////////////////////////////////////////////////
 
-`define RD1 8'h10		// 32 bytes  - cmd 10
+//`define RD1 8'h10		// 32 bytes  - cmd 10
+`define RD1 8'h80		// 256 bytes  - cmd 10
 `define RD2 8'h80		// 256 bytes - cmd 11
 `define WR2 8'h80		// 256 bytes - cmd 01
 `define PitchBits	1	
