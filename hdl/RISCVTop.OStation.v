@@ -329,7 +329,7 @@ end
 	reg nop;
 	always @(posedge clk_sdr) begin
 		nop <= sys_cmd_ack == 2'b00;
-		if(almost_empty) cntrl0_user_command_register <= 2'b10;		// read 32 bytes VGA
+		if(rst && almost_empty) cntrl0_user_command_register <= 2'b10;		// read 32 bytes VGA
 		else if(ddr_wr) cntrl0_user_command_register <= 2'b01;		// write 256 bytes cache
 		else if(ddr_rd) cntrl0_user_command_register <= 2'b11;		// read 256 bytes cache
 		else cntrl0_user_command_register <= 2'b00;
