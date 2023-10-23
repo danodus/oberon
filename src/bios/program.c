@@ -3,7 +3,6 @@
 #define RAM_START   0x00000000
 
 #define BASE_IO     0xE0000000
-#define BASE_VIDEO  0x80000
 
 #define LED         (BASE_IO + 4)
 #define UART_DATA   (BASE_IO + 8)
