@@ -20,7 +20,7 @@ AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE DEALINGS IN OR USE OR PERFORMANCE OF THE SOFTWARE.*/
 
 // NW 4.5.09 / 15.11.10
-// RS232 receiver for 19200 or 115200 bps, 8 bit data
+// RS232 receiver for 115200 or 230400 bps, 8 bit data
 // clock is 25 MHz
 
 
@@ -41,9 +41,9 @@ reg [3:0] bitcnt;
 reg [7:0] shreg;
 
 `ifdef FAST_CPU
-assign limit = fsel ? 217*2 : 1302*2;
+assign limit = fsel ? 109*2 : 217*2;
 `else
-assign limit = fsel ? 217 : 1302;
+assign limit = fsel ? 109 : 217;
 `endif
 assign endtick = tick == limit;
 assign midtick = tick == {1'b0, limit[11:1]};  // limit/2

@@ -20,7 +20,7 @@ AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE DEALINGS IN OR USE OR PERFORMANCE OF THE SOFTWARE.*/
 
 // NW 4.5.09 / 15.8.10 / 15.11.10
-// RS232 transmitter for 19200 bps, 8 bit data
+// RS232 transmitter for 115200/230400 bps, 8 bit data
 // clock is 25 MHz; 25000 / 1302 = 19.2 KHz
 
 module RS232T(
@@ -39,9 +39,9 @@ reg [3:0] bitcnt;
 reg [8:0] shreg;
 
 `ifdef FAST_CPU
-assign limit = fsel ? 217*2 : 1302*2;
+assign limit = fsel ? 109*2 : 217*2;
 `else
-assign limit = fsel ? 217 : 1302;
+assign limit = fsel ? 109 : 217;
 `endif
 assign endtick = tick == limit;
 assign endbit = bitcnt == 9;
