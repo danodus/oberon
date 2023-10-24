@@ -34,6 +34,6 @@ program.bin: program.elf program.lst
 	${OBJCOPY} -O binary program.elf program.bin
 
 program.elf: $(PROGRAM_SOURCE) $(LIB_SOURCE)
-	${CC} $(RISCV_CC_OPT) -Wall -std=c99 -nostartfiles -g -O3 -T $(LDFILE) -I ../lib $(PROGRAM_SOURCE) $(LIB_SOURCE) -o program.elf -lm
+	${CC} $(RISCV_CC_OPT) -Wall -Wno-switch -std=c99 -nostartfiles -g -O3 -T $(LDFILE) -I ../lib $(PROGRAM_SOURCE) $(LIB_SOURCE) -o program.elf -lm
 
 .PHONY: all clean run
