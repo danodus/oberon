@@ -2,23 +2,48 @@
 #define _SDL_H_
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #define SDL_INIT_EVERYTHING 0
 #define SDL_WINDOWPOS_CENTERED 0
 #define SDL_WINDOW_BORDERLESS 0
+
+#define SDL_DEFINE_PIXELFORMAT(type, order, layout, bits, bytes) \
+    ((1 << 28) | ((type) << 24) | ((order) << 20) | ((layout) << 16) | \
+     ((bits) << 8) | ((bytes) << 0))
 
 enum {
     SDLK_UNKNOWN = 0,
     SDLK_ESCAPE = '\033'
 };
 
-typedef enum
-{
+typedef enum {
     SDL_FIRSTEVENT = 0,
     SDL_QUIT = 0x100,
     SDL_KEYDOWN = 0x300,
     SDL_KEYUP
 } SDL_EventType;
+
+typedef enum {
+    SDL_PIXELTYPE_PACKED16 = 5
+} SDL_PixelType;
+
+typedef enum {
+    SDL_PACKEDORDER_ARGB = 3
+} SDL_PackedOrder;
+
+typedef enum {
+    SDL_PACKEDLAYOUT_4444 = 2
+} SDL_PackedLayout;
+
+typedef enum {
+    SDL_PIXELFORMAT_ARGB4444 = SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_ARGB,
+                               SDL_PACKEDLAYOUT_4444, 16, 2)
+} SDL_PixelFormatEnum;
+
+typedef enum {
+    SDL_TEXTUREACCESS_STREAMING = 1
+} SDL_TextureAccess;
 
 typedef uint32_t Uint32;
 typedef int32_t Sint32;
@@ -30,7 +55,13 @@ typedef struct {
 } SDL_Window;
 
 typedef struct {
+    Uint8 draw_color[4];
 } SDL_Renderer;
+
+typedef struct {
+    int w, h;
+    uint16_t *data;
+} SDL_Texture;
 
 typedef struct SDL_Keysym {
     SDL_Keycode sym;
@@ -44,6 +75,9 @@ typedef struct {
     SDL_EventType type;
     SDL_KeyboardEvent key;
 } SDL_Event;
+
+typedef struct {
+} SDL_Rect;
 
 int SDL_Init(Uint32 flags);
 
@@ -61,6 +95,20 @@ SDL_Renderer * SDL_CreateRenderer(
     int index,
     Uint32 flags);
 
+SDL_Texture * SDL_CreateTexture(SDL_Renderer * renderer,
+    Uint32 format,
+    int access, int w,
+    int h);
+
+int SDL_UpdateTexture(SDL_Texture * texture,
+    const SDL_Rect * rect,
+    const void *pixels, int pitch);
+
+int SDL_RenderCopy(SDL_Renderer * renderer,
+    SDL_Texture * texture,
+    const SDL_Rect * srcrect,
+    const SDL_Rect * dstrect);
+
 int SDL_PollEvent(SDL_Event * event);
 
 int SDL_SetRenderDrawColor(SDL_Renderer * renderer,
@@ -69,6 +117,12 @@ int SDL_SetRenderDrawColor(SDL_Renderer * renderer,
 
 int SDL_RenderClear(SDL_Renderer * renderer);                   
 
-void SDL_RenderPresent(SDL_Renderer * renderer);                   
+void SDL_RenderPresent(SDL_Renderer * renderer);
+
+void SDL_DestroyWindow(SDL_Window * window);
+void SDL_DestroyRenderer(SDL_Renderer * renderer);
+void SDL_DestroyTexture(SDL_Texture * texture);
+
+void SDL_Quit(void);
 
 #endif // _SDL_H_

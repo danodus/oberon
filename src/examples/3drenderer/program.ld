@@ -3,11 +3,14 @@ MEMORY
    ram      (rwx) : ORIGIN = 0x00000000, LENGTH = 16*1024*1024
 }
 
+__stacktop = ORIGIN(ram) + LENGTH(ram);
+
 SECTIONS {
 	.memory : {
 		. = 0x000000;
 		*(.init);
 		*(.text);
+		*(*);
 		. = ALIGN(4);
 		end = .;
 	} >ram

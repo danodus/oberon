@@ -2,6 +2,8 @@
 
 #include "../io.h"
 
+#include <string.h>
+
 #define BASE_VIDEO  0x1000000
 
 int SDL_Init(
@@ -22,15 +24,56 @@ SDL_Window * SDL_CreateWindow(
     for (unsigned int i = 0; i < 640*480*2; i += 4)
         MEM_WRITE(BASE_VIDEO + i, 0x00000000);
 
-    return (SDL_Window *)(1);
+    SDL_Window * window = (SDL_Window *) malloc(sizeof(SDL_Window));
+
+    return window;
 }
 
 SDL_Renderer * SDL_CreateRenderer(
     SDL_Window * window,
     int index,
     Uint32 flags) {
+
+    SDL_Renderer *renderer = (SDL_Renderer *) malloc(sizeof(renderer));
+    renderer->draw_color[0] = 0;
+    renderer->draw_color[1] = 0;
+    renderer->draw_color[2] = 0;
+    renderer->draw_color[3] = 255;
+
+    return renderer;
+}
+
+SDL_Texture * SDL_CreateTexture(SDL_Renderer * renderer,
+    Uint32 format,
+    int access,
+    int w,
+    int h) {
+    SDL_Texture * texture = (SDL_Texture *)malloc(sizeof(SDL_Texture));
+    texture->w = w;
+    texture->h = h;
+    texture->data = malloc(w * h * sizeof(uint16_t));
+    return texture;
+}
+
+int SDL_UpdateTexture(SDL_Texture * texture,
+    const SDL_Rect * rect,
+    const void *pixels, int pitch) {
+    if (rect)
+        return -1;
+
+    memcpy(texture->data, pixels, texture->w * texture->h * sizeof(uint16_t));
+    return 0;
+}
+
+int SDL_RenderCopy(SDL_Renderer * renderer,
+    SDL_Texture * texture,
+    const SDL_Rect * srcrect,
+    const SDL_Rect * dstrect) {
+    if (srcrect || dstrect)
+        return -1;
     
-    return (SDL_Renderer *)(1);
+    memcpy((uint16_t *)BASE_VIDEO, texture->data, texture->w * texture->h * sizeof(uint16_t));
+    return 0;
 }
 
 static SDL_Keycode get_keycode(int scancode) {
@@ -58,27 +101,26 @@ int SDL_PollEvent(SDL_Event * event) {
     return 0;
 }
 
-static Uint8 render_draw_color[4];
 int SDL_SetRenderDrawColor(SDL_Renderer * renderer,
                    Uint8 r, Uint8 g, Uint8 b,
                    Uint8 a) {
-    render_draw_color[0] = r;
-    render_draw_color[1] = g;
-    render_draw_color[2] = b;
-    render_draw_color[3] = a;
+    renderer->draw_color[0] = r;
+    renderer->draw_color[1] = g;
+    renderer->draw_color[2] = b;
+    renderer->draw_color[3] = a;
     return 0;
 }
 
 int SDL_RenderClear(SDL_Renderer * renderer) {
     uint32_t c;
-    c = render_draw_color[3] >> 4;
-    c = (c << 4) | (render_draw_color[0] >> 4);
-    c = (c << 4) | (render_draw_color[1] >> 4);
-    c = (c << 4) | (render_draw_color[2] >> 4);
-    c = (c << 4) | (render_draw_color[3] >> 4);
-    c = (c << 4) | (render_draw_color[0] >> 4);
-    c = (c << 4) | (render_draw_color[1] >> 4);
-    c = (c << 4) | (render_draw_color[2] >> 4);
+    c = renderer->draw_color[3] >> 4;
+    c = (c << 4) | (renderer->draw_color[0] >> 4);
+    c = (c << 4) | (renderer->draw_color[1] >> 4);
+    c = (c << 4) | (renderer->draw_color[2] >> 4);
+    c = (c << 4) | (renderer->draw_color[3] >> 4);
+    c = (c << 4) | (renderer->draw_color[0] >> 4);
+    c = (c << 4) | (renderer->draw_color[1] >> 4);
+    c = (c << 4) | (renderer->draw_color[2] >> 4);
 
     for (unsigned int i = 0; i < 640*480*2; i += 4)
         MEM_WRITE(BASE_VIDEO + i, c);
@@ -87,4 +129,24 @@ int SDL_RenderClear(SDL_Renderer * renderer) {
 }
 
 void SDL_RenderPresent(SDL_Renderer * renderer) {
+}
+
+void SDL_DestroyWindow(SDL_Window * window) {
+    if (window)
+        free(window);
+}
+
+void SDL_DestroyRenderer(SDL_Renderer * renderer) {
+    if (renderer)
+        free(renderer);
+}
+
+void SDL_DestroyTexture(SDL_Texture * texture) {
+    if (texture && texture->data)
+        free(texture->data);
+    if (texture)
+        free(texture);
+}
+
+void SDL_Quit(void) {
 }
