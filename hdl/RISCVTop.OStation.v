@@ -110,7 +110,9 @@ wire rd, wr, ioenb, dspreq;
 wire [3:0] wmask;
 
 wire [7:0] dataTx, dataRx, dataKbd;
-wire rdyRx, doneRx, startTx, rdyTx, rdyKbd, doneKbd;
+wire rdyRx, startTx, rdyTx, rdyKbd;
+reg doneRx;
+reg doneKbd;
 wire [27:0] dataMs;
 reg bitrate;  // for RS232
 wire limit;  // of cnt0
@@ -211,7 +213,6 @@ endgenerate
 
 assign dataTx = outbus[7:0];
 assign startTx = wr & ioenb & (iowadr == 2);
-assign doneRx = rd & ioenb & (iowadr == 2);
 `ifdef FAST_CPU
 assign limit = (cnt0 == 49999);
 `else
@@ -221,7 +222,18 @@ assign LED = Lreg;
 assign spiStart = wr & ioenb & (iowadr == 4);
 assign SS = ~spiCtrl[1:0];  //active low slave select
 assign MOSI[1] = MOSI[0], SCLK[1] = SCLK[0], NEN = spiCtrl[3];
-assign doneKbd = rd & ioenb & (iowadr == 7);
+
+always @(posedge clk) begin
+	doneRx <= 1'b0;
+	if (rd & ioenb & (iowadr == 2))
+		doneRx <= 1'b1;
+end
+
+always @(posedge clk) begin
+	doneKbd <= 1'b0;
+	if (rd & ioenb & (iowadr == 7))
+		doneKbd <= 1'b1;
+end
 
 always @(posedge clk) begin
 `ifdef SYNTHESIS
