@@ -12,6 +12,17 @@ int SDL_Init(
     return 0;
 }
 
+int SDL_GetCurrentDisplayMode(int displayIndex, SDL_DisplayMode * mode) {
+    mode->w = 640;
+    mode->h = 480;
+    return 0;
+}
+
+int SDL_SetWindowFullscreen(SDL_Window * window, Uint32 flags) {
+    return 0;
+}
+
+
 SDL_Window * SDL_CreateWindow(
     const char * title,
     int x,

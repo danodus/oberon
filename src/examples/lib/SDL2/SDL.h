@@ -45,11 +45,21 @@ typedef enum {
     SDL_TEXTUREACCESS_STREAMING = 1
 } SDL_TextureAccess;
 
+typedef enum
+{
+    SDL_WINDOW_FULLSCREEN = 0x00000001
+} SDL_WindowFlags;
+
 typedef uint32_t Uint32;
 typedef int32_t Sint32;
 typedef uint8_t Uint8;
 
 typedef Sint32 SDL_Keycode;
+
+typedef struct {
+    int w;
+    int h;
+} SDL_DisplayMode;
 
 typedef struct {
 } SDL_Window;
@@ -80,6 +90,9 @@ typedef struct {
 } SDL_Rect;
 
 int SDL_Init(Uint32 flags);
+
+int SDL_GetCurrentDisplayMode(int displayIndex, SDL_DisplayMode * mode);
+int SDL_SetWindowFullscreen(SDL_Window * window, Uint32 flags);
 
 SDL_Window * SDL_CreateWindow(
     const char * title,
