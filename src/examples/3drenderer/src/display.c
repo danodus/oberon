@@ -52,10 +52,15 @@ void draw_grid(void) {
             color_buffer[(window_width * y) + x] = 0xF333;
 }
 
+void draw_pixel(int x, int y, uint32_t color) {
+    if (x >=0 && x < window_width && y >= 0 && y < window_height)
+        color_buffer[(window_width * y) + x] = color;
+}
+
 void draw_rect(int x, int y, int width, int height, uint16_t color) {
     for (int j = y; j < y + height; j++)
         for (int i = x; i < x + width; i++)
-            color_buffer[(window_width * j) + i] = color;
+            draw_pixel(i, j, color);
 }
 
 void render_color_buffer(void) {
