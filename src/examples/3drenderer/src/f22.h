@@ -1,6 +1,6 @@
 #define N_F22_VERTICES (sizeof(f22_vertices)/sizeof(f22_vertices[0]))
 #define N_F22_FACES (sizeof(f22_faces)/sizeof(f22_faces[0]))
-vec3_t f22_vertices[] = {
+mesh_data_vec3_t f22_vertices[] = {
 {.x=0.885739, .y=0.00191, .z=-0.380334},
 {.x=0.322026, .y=0.03547, .z=-0.433102},
 {.x=-0.907053, .y=0.017201, .z=-0.352922},

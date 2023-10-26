@@ -2,8 +2,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <SDL.h>
+#include <libfixmath/fix16.h>
+
 #include "array.h"
 #include "display.h"
+
+#include "array.h"
 #include "vector.h"
 #include "mesh.h"
 
@@ -11,13 +15,18 @@ triangle_t* triangles_to_render = NULL;
 
 vec3_t camera_position = { .x = 0, .y = 0, .z = -5 };
 
-float fov_factor = 640;
+fix16_t fov_factor;
 
 bool is_running = false;
 
 int previous_frame_time = 0;
 
 void setup(void) {
+
+    camera_position = (vec3_t){ .x = fix16_from_float(0), .y = fix16_from_float(0), .z = fix16_from_float(-5) };
+
+    fov_factor = fix16_from_float(640);
+
     // Allocate the required memory in bytes to hold the color buffer
     color_buffer = (uint16_t*) malloc(sizeof(uint16_t) * window_width * window_height);
 
@@ -57,8 +66,8 @@ void process_input(void) {
 // Function that receives a 3D vector and returns a projected 2D point
 vec2_t project(vec3_t point) {
     vec2_t projected_point = {
-        .x = (fov_factor * point.x) / point.z,
-        .y = (fov_factor * point.y) / point.z
+        .x = fix16_div(fix16_mul(fov_factor, point.x), point.z),
+        .y = fix16_div(fix16_mul(fov_factor, point.y), point.z)
     };
     return projected_point;
 }
@@ -76,9 +85,9 @@ void update(void) {
     // Initialize the array of triangles to render
     triangles_to_render = NULL;
 
-    mesh.rotation.x += 0.1;
-    mesh.rotation.y += 0.0;
-    mesh.rotation.z += 0.0;
+    mesh.rotation.x += fix16_from_float(0.1);
+    mesh.rotation.y += fix16_from_float(0.0);
+    mesh.rotation.z += fix16_from_float(0.0);
 
     // Loop all triangle faces of our mesh
     int num_faces = array_length(mesh.faces);
@@ -107,8 +116,8 @@ void update(void) {
             vec2_t projected_point = project(transformed_vertex);
 
             // Scale and translate the projected points to the middle of the screen
-            projected_point.x += (window_width / 2);
-            projected_point.y += (window_height / 2);
+            projected_point.x += fix16_from_float(window_width / 2);
+            projected_point.y += fix16_from_float(window_height / 2);
 
             projected_triangle.points[j] = projected_point;
         }
@@ -129,18 +138,18 @@ void render(void) {
         triangle_t triangle = triangles_to_render[i];
 
         // Draw vertex points
-        draw_rect(triangle.points[0].x, triangle.points[0].y, 3, 3, 0xFFF0);
-        draw_rect(triangle.points[1].x, triangle.points[1].y, 3, 3, 0xFFF0);
-        draw_rect(triangle.points[2].x, triangle.points[2].y, 3, 3, 0xFFF0);
+        draw_rect(fix16_to_int(triangle.points[0].x), fix16_to_int(triangle.points[0].y), 3, 3, 0xFFF0);
+        draw_rect(fix16_to_int(triangle.points[1].x), fix16_to_int(triangle.points[1].y), 3, 3, 0xFFF0);
+        draw_rect(fix16_to_int(triangle.points[2].x), fix16_to_int(triangle.points[2].y), 3, 3, 0xFFF0);
 
         // Draw unfilled triangles
         draw_triangle(
-            triangle.points[0].x,
-            triangle.points[0].y,
-            triangle.points[1].x,
-            triangle.points[1].y,
-            triangle.points[2].x,
-            triangle.points[2].y,
+            fix16_to_int(triangle.points[0].x),
+            fix16_to_int(triangle.points[0].y),
+            fix16_to_int(triangle.points[1].x),
+            fix16_to_int(triangle.points[1].y),
+            fix16_to_int(triangle.points[2].x),
+            fix16_to_int(triangle.points[2].y),
             0xF0F0
         );
     }

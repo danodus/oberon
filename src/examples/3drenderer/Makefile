@@ -10,7 +10,7 @@ OBJDUMP = ${RISCV_TOOLCHAIN_PATH}${RISCV_TOOLCHAIN_PREFIX}objdump
 CC = ${RISCV_TOOLCHAIN_PATH}${RISCV_TOOLCHAIN_PREFIX}gcc
 RISCV_CC_OPT ?= -march=rv32im -mabi=ilp32
 
-LIB_SOURCE = ../lib/io.c ../lib/syscalls.c ../lib/SDL2/sdl.c
+LIB_SOURCE = ../lib/io.c ../lib/syscalls.c ../lib/SDL2/sdl.c ../lib/libfixmath/*.c
 PROGRAM_SOURCE = src/start.S src/*.c
 SERIAL ?= /dev/tty.usbserial-D00039
 

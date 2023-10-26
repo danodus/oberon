@@ -1,6 +1,6 @@
 #define N_CUBE_VERTICES (sizeof(cube_vertices)/sizeof(cube_vertices[0]))
 #define N_CUBE_FACES (sizeof(cube_faces)/sizeof(cube_faces[0]))
-vec3_t cube_vertices[] = {
+mesh_data_vec3_t cube_vertices[] = {
 {.x=-1.0, .y=-1.0, .z=1.0},
 {.x=1.0, .y=-1.0, .z=1.0},
 {.x=-1.0, .y=1.0, .z=1.0},

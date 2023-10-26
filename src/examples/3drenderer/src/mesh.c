@@ -5,6 +5,12 @@
 #include "mesh.h"
 #include "array.h"
 
+typedef struct {
+    float x;
+    float y;
+    float z;
+} mesh_data_vec3_t;
+
 #include "cube.h"
 #include "f22.h"
 
@@ -15,8 +21,15 @@ mesh_t mesh = {
 };
 
 void load_cube_mesh_data(void) {
+    mesh.vertices = NULL;
+    mesh.faces = NULL;
+    mesh.rotation = (vec3_t){ .x = fix16_from_float(0), .y = fix16_from_float(0), .z = fix16_from_float(0) };
     for (int i = 0; i < N_CUBE_VERTICES; i++) {
-        vec3_t cube_vertex = cube_vertices[i];
+        vec3_t cube_vertex = (vec3_t){
+            .x = fix16_from_float(cube_vertices[i].x),
+            .y = fix16_from_float(cube_vertices[i].y),
+            .z = fix16_from_float(cube_vertices[i].z)
+        };
         array_push(mesh.vertices, cube_vertex);
     }
     for (int i = 0; i < N_CUBE_FACES; i++) {
@@ -26,8 +39,15 @@ void load_cube_mesh_data(void) {
 }
 
 void load_f22_mesh_data(void) {
+    mesh.vertices = NULL;
+    mesh.faces = NULL;
+    mesh.rotation = (vec3_t){ .x = fix16_from_float(0), .y = fix16_from_float(0), .z = fix16_from_float(0) };
     for (int i = 0; i < N_F22_VERTICES; i++) {
-        vec3_t f22_vertex = f22_vertices[i];
+        vec3_t f22_vertex = (vec3_t){
+            .x = fix16_from_float(f22_vertices[i].x),
+            .y = fix16_from_float(f22_vertices[i].y),
+            .z = fix16_from_float(f22_vertices[i].z)
+        };
         array_push(mesh.vertices, f22_vertex);
     }
     for (int i = 0; i < N_F22_FACES; i++) {

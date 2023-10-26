@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <libfixmath/fix16.h>
+
 #include "display.h"
 
 SDL_Window* window = NULL;
@@ -64,13 +66,13 @@ void draw_line(int x0, int y0, int x1, int y1, uint16_t color) {
 
     int longest_side_length = (abs(delta_x) >= abs(delta_y)) ? abs(delta_x) : abs(delta_y);
 
-    float x_inc = delta_x / (float)longest_side_length;
-    float y_inc = delta_y / (float)longest_side_length;
+    fix16_t x_inc = fix16_div(fix16_from_int(delta_x), fix16_from_int(longest_side_length));
+    fix16_t y_inc = fix16_div(fix16_from_int(delta_y), fix16_from_int(longest_side_length));
 
-    float x = x0;
-    float y = y0;
+    fix16_t x = fix16_from_int(x0);
+    fix16_t y = fix16_from_int(y0);
     for (int i = 0; i < longest_side_length; i++) {
-        draw_pixel(round(x), round(y), color);
+        draw_pixel(fix16_to_int(x), fix16_to_int(y), color);
         x += x_inc;
         y += y_inc;        
     }
