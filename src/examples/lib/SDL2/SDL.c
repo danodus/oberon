@@ -6,9 +6,12 @@
 
 #define BASE_VIDEO  0x1000000
 
+static Uint32 init_timer;
+
 int SDL_Init(
     Uint32 flags
 ) {
+    init_timer = MEM_READ(TIMER);
     return 0;
 }
 
@@ -160,4 +163,13 @@ void SDL_DestroyTexture(SDL_Texture * texture) {
 }
 
 void SDL_Quit(void) {
+}
+
+Uint32 SDL_GetTicks(void) {
+    return MEM_READ(TIMER) - init_timer;
+}
+
+void SDL_Delay(Uint32 ms) {
+    Uint32 target_time = SDL_GetTicks() + ms;
+    while (!SDL_TICKS_PASSED(SDL_GetTicks(), target_time));
 }

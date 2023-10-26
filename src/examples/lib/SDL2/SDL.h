@@ -4,6 +4,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+typedef uint32_t Uint32;
+typedef int32_t Sint32;
+typedef uint8_t Uint8;
+
+#define SDL_TICKS_PASSED(A, B)  ((Sint32)((B) - (A)) <= 0)
+
 #define SDL_INIT_EVERYTHING 0
 #define SDL_WINDOWPOS_CENTERED 0
 #define SDL_WINDOW_BORDERLESS 0
@@ -49,10 +55,6 @@ typedef enum
 {
     SDL_WINDOW_FULLSCREEN = 0x00000001
 } SDL_WindowFlags;
-
-typedef uint32_t Uint32;
-typedef int32_t Sint32;
-typedef uint8_t Uint8;
 
 typedef Sint32 SDL_Keycode;
 
@@ -137,5 +139,8 @@ void SDL_DestroyRenderer(SDL_Renderer * renderer);
 void SDL_DestroyTexture(SDL_Texture * texture);
 
 void SDL_Quit(void);
+
+Uint32 SDL_GetTicks(void);
+void SDL_Delay(Uint32 ms);
 
 #endif // _SDL_H_
