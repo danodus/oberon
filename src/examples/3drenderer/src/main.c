@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include "array.h"
 #include "display.h"
 #include "vector.h"
@@ -31,7 +31,12 @@ void setup(void) {
     );
 
     // Loads the cube values in the mesh data structures
-    load_cube_mesh_data();
+    // load_cube_mesh_data();
+#ifdef LOCAL
+    load_obj_file_data("./assets/f22.obj");
+#else
+    load_f22_mesh_data();
+#endif
 }
 
 void process_input(void) {
@@ -71,9 +76,9 @@ void update(void) {
     // Initialize the array of triangles to render
     triangles_to_render = NULL;
 
-    mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.01;
-    mesh.rotation.z += 0.01;
+    mesh.rotation.x += 0.1;
+    mesh.rotation.y += 0.0;
+    mesh.rotation.z += 0.0;
 
     // Loop all triangle faces of our mesh
     int num_faces = array_length(mesh.faces);
