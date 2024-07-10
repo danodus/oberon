@@ -74,7 +74,7 @@ module ulx3s_v31(
         #(
             .in_hz( 25*1000000),
           .out0_hz(100*1000000),
-          .out1_hz(100*1000000), .out1_deg(225),
+          .out1_hz(100*1000000), .out1_deg(180),
           .out2_hz( 25*1000000)
         )
         ecp5pll_system_inst
